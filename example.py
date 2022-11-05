@@ -1,6 +1,6 @@
-from pyjbd import pyjbd
+from pyjbd import connector
 
-db = pyjbd.pyjbd()
+db = connector.pyjbd()
 
 db.create_database("m")
 db.set_db('m')
