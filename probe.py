@@ -27,11 +27,11 @@ t = TimeProbe()
 
 t.start("import")
 from pyjbd.pyjbd import connector
-from pyjbd import typeutils as tp
+from pyjbd.typeutils import Table
 db = connector()
 t.stop("import")
 
-class Prova():
+class Prova(Table):
     def __init__(self):
         super().__init__()
         self.field = ""
@@ -42,9 +42,10 @@ db.set_db('m')
 t.stop("createdb")
 
 t.start("add")
-db.add("nome", "giuseppe")
-db.add("cognome", "criscione")
-db.add('list', [])
+db.insert("nome", "giuseppe")
+db.insert("cognome", "criscione")
+db.insert('list', [])
+db.insert("object",{"property":"value"})
 t.stop("add")
 
 t.start("dump")
@@ -67,14 +68,22 @@ t.stop("delete")
 
 print(db.dump("m"))
 
-t.start("deletedb")
-db.delete_database("m")
-t.stop("deletedb")
 
-t.printAll()
+
+#t.printAll()
 
 p = Prova()
 p.field = "prova"
 db.registerType(p)
 db.validateType(p)
-print(p.__dict__)
+print(p.asObject())
+
+print(db.tables)
+
+db.insert_table(p)
+db.insert_table(p)
+print(db.dump("m"))
+
+t.start("deletedb")
+db.delete_database("m")
+t.stop("deletedb")

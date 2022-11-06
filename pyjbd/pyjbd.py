@@ -70,7 +70,7 @@ class connector:
         else:
             raise DatabaseError
 
-    def add(self, key, value):
+    def insert(self, key, value):
         with open(self.db_prefs['ref'], "r") as jf:
             data = json.loads(jf.read())
 
@@ -78,6 +78,24 @@ class connector:
 
         with open(self.db_prefs['ref'], "w") as jf:
             json.dump(data, jf)
+
+    def insert_table(self, object):
+        if not self.validateType(object):
+            return False
+            
+        tablename = object.__class__.__name__
+        
+        if tablename not in self.tables:
+            return False
+        
+        with open(self.db_prefs['ref'], "r") as jf:
+            data = json.loads(jf.read())
+
+        data[tablename].append(object.asObject())
+
+        with open(self.db_prefs['ref'], "w") as jf:
+            json.dump(data, jf)
+
 
     def delete(self, key):
         with open(self.db_prefs['ref'], "r") as jf:
@@ -114,10 +132,12 @@ class connector:
 
     # SUPPORT FOR TYPES
     def registerType(self,object):
-        if "isTable" in object.__dict__.keys() :
-            self.tables.append(object.__class__.__name__)
+        if object.conf and object.conf["isTable"]:
+        #if "isTable" in object.__dict__.keys() :
+            name = object.__class__.__name__
+            self.tables.append(name)
+            self.insert(name,[])
         else: raise Exception("not a table")
-        
 
     def validateType(self, object):
-        print(object.__class__.__name__ in self.tables)
+        return object.__class__.__name__ in self.tables
