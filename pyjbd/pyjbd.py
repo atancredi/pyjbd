@@ -19,6 +19,7 @@ class connector:
                 else:
                     raise PathNonExists(path)
             self.local_path = os.getcwd()
+            self.tables = []
         except Exception as ex:
             print(ex)
             sys.exit()
@@ -112,5 +113,11 @@ class connector:
                 raise KeyNotFound
 
     # SUPPORT FOR TYPES
+    def registerType(self,object):
+        if "isTable" in object.__dict__.keys() :
+            self.tables.append(object.__class__.__name__)
+        else: raise Exception("not a table")
+        
+
     def validateType(self, object):
-        print(type(object))
+        print(object.__class__.__name__ in self.tables)

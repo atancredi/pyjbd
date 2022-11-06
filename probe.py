@@ -24,10 +24,17 @@ class TimeProbe:
 
 t = TimeProbe()
 
+
 t.start("import")
 from pyjbd.pyjbd import connector
+from pyjbd import typeutils as tp
 db = connector()
 t.stop("import")
+
+class Prova():
+    def __init__(self):
+        super().__init__()
+        self.field = ""
 
 t.start("createdb")
 db.create_database("m")
@@ -65,3 +72,9 @@ db.delete_database("m")
 t.stop("deletedb")
 
 t.printAll()
+
+p = Prova()
+p.field = "prova"
+db.registerType(p)
+db.validateType(p)
+print(p.__dict__)
