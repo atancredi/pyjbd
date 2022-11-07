@@ -10,3 +10,9 @@ class Table:
         obj = dict(self.__dict__)
         del obj["conf"]
         return self.__dict__
+
+class IndexedTable(Table):
+
+    def __init__(self):
+        super().__init__()
+        self.hasIndex = True

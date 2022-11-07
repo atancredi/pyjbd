@@ -8,6 +8,7 @@ from pyjbd.exceptions import *
 
 
 class connector:
+
     db_list = []
     db_prefs = None
 
@@ -20,20 +21,26 @@ class connector:
                     raise PathNonExists(path)
             self.local_path = os.getcwd()
             self.tables = []
+            self.db = {}
+            
+            #separator specific for system - can be done better
+            self.sep = "/"
+            if "\\" in self.local_path:
+                self.sep = "\\"
+
         except Exception as ex:
             print(ex)
             sys.exit()
 
     def create_database(self, name):
 
-        sep = "/"
-        if "\\" in self.local_path:
-            sep = "\\"
         db = {
             'name': name,
-            'path': self.local_path + sep + name,
+            'path': self.local_path + self.sep + name,
             'ref': name + '.json'
         }
+
+        self.db = db
 
         # TODO: controlla che esista la dir prima
         os.mkdir(db['path'])
@@ -43,6 +50,24 @@ class connector:
             json.dump(tmp_db, db_name)
 
         self.db_list.append(db)
+
+    def save_database(self):
+        os.chdir(self.db["path"])
+        info = dict(self.db)
+        info["tables"] = self.tables
+        with open("config.json", 'w') as f:
+            f.write(json.dumps(info))
+
+    def open_database(self,name):
+        path = self.local_path + self.sep + name
+        if not os.path.exists(path):
+            self.create_database(name)
+        else:
+            with open(path + self.sep + 'config.json', 'r') as i:
+                db = json.loads(i.read())
+                self.db = db
+                self.tables = db["tables"]
+                self.db_list.append(db)
 
     def delete_database(self, db_name):
         db = utils.exists(self.db_list, db_name)
@@ -81,7 +106,7 @@ class connector:
 
     def insert_table(self, object):
         if not self.validateType(object):
-            return False
+            self.registerType(object)
             
         tablename = object.__class__.__name__
         
@@ -95,7 +120,6 @@ class connector:
 
         with open(self.db_prefs['ref'], "w") as jf:
             json.dump(data, jf)
-
 
     def delete(self, key):
         with open(self.db_prefs['ref'], "r") as jf:
@@ -135,9 +159,42 @@ class connector:
         if object.conf and object.conf["isTable"]:
         #if "isTable" in object.__dict__.keys() :
             name = object.__class__.__name__
-            self.tables.append(name)
-            self.insert(name,[])
+            if name not in self.tables:
+                self.tables.append(name)
+                self.insert(name,[])
         else: raise Exception("not a table")
 
     def validateType(self, object):
         return object.__class__.__name__ in self.tables
+
+class DBActions:
+
+    def __init__(self,name):
+        self.db = connector()
+        self.name = name
+
+    def create(self):
+        self.db.create_database(self.name)
+
+    def delete(self):
+        self.db.delete_database(self.name)
+
+    def open(self):
+        pass
+
+    def save(self):
+        pass
+
+class Database():
+
+    def __init__(self, name, path = None):
+        pass
+
+        if path == None:
+            path = os.getcwd()
+
+        #try to open database
+
+        #if not exists create
+
+
