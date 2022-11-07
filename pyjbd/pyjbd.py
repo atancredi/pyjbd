@@ -21,67 +21,28 @@ class connector:
     def __init__(self,conf, path = None):
 
         try:
-            self.local_path = conf["local_path"]
-            self.tables = conf["tables"]
-            self.db = {}
+            self.conf = conf
             
             #separator specific for system - can be done better
-            self.sep = "/"
-            if "\\" in self.local_path:
-                self.sep = "\\"
+            self.sep = "\\" if "\\" in conf["local_path"] else "/"
 
         except Exception as ex:
             print(ex)
             sys.exit()
 
-    def create_database(self, name):
-
-        db = {
-            'name': name,
-            'path': self.local_path + self.sep + name,
-            'ref': name + '.json'
-        }
-
-        self.db = db
-
-        # TODO: controlla che esista la dir prima
-        os.mkdir(db['path'])
-        os.chdir(db['path'])
-        with open(db['ref'], 'w') as db_name:
-            tmp_db = {}
-            json.dump(tmp_db, db_name)
-
-        self.db_list.append(db)
-        self.save_database()
-
-    def save_database(self):
-        os.chdir(self.db["path"])
-        info = dict(self.db)
-        info["tables"] = self.tables
-        with open("config.json", 'w') as f:
-            f.write(json.dumps(info))
-
-    def open_database(self,name):
-        path = self.local_path + self.sep + name
-        if not os.path.exists(path):
-            self.create_database(name)
-        else:
-            with open(path + self.sep + 'config.json', 'r') as i:
-                db = json.loads(i.read())
-                self.db = db
-                self.tables = db["tables"]
-                self.db_list.append(db)
-
     def delete_database(self, db_name):
-        db = utils.exists(self.db_list, db_name)
-        if db:
-            if os.getcwd() == db['path']:
-                os.chdir("..")
-            shutil.rmtree(db['path'])
-        else:
-            raise DatabaseError
+        if os.getcwd() == self.conf['path']:
+            os.chdir("..")
+            shutil.rmtree(self.conf['path'])
+        # db = utils.exists(self.db_list, db_name)
+        # if db:
+            
+        # else:
+        #     raise DatabaseError
 
     def set_db(self, db_name):
+        os.chdir(self.conf['path'])
+        return
         db = utils.exists(self.db_list, db_name)
         if db:
             self.db_prefs = db
@@ -89,44 +50,16 @@ class connector:
         else:
             raise DatabaseError
 
-    def dump(self, db_name):
-        db = utils.exists(self.db_list, db_name)
-        if db:
-            with open(db['ref']) as _db:
-                data = json.loads(_db.read())
-                return data
-        else:
-            raise DatabaseError
-
     def insert(self, key, value):
-        with open(self.db_prefs['ref'], "r") as jf:
+        with open(self.conf['ref'], "r") as jf:
             data = json.loads(jf.read())
 
         data[key] = value
 
-        with open(self.db_prefs['ref'], "w") as jf:
+        with open(self.conf['ref'], "w") as jf:
             json.dump(data, jf)
 
-    def insert_table(self, object):
-        if not self.validateType(object):
-            self.registerType(object)
-            
-        tablename = object.__class__.__name__
-        
-        if tablename not in self.tables:
-            return False
-        
-        with open(self.db_prefs['ref'], "r") as jf:
-            data = json.loads(jf.read())
-
-        if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
-            data[tablename][len(data[tablename])] = object.asObject()
-        else:
-            data[tablename].append(object.asObject())
-
-        with open(self.db_prefs['ref'], "w") as jf:
-            json.dump(data, jf)
-
+    
     def delete(self, key):
         with open(self.db_prefs['ref'], "r") as jf:
             data = json.loads(jf.read())
@@ -160,45 +93,13 @@ class connector:
             else:
                 raise KeyNotFound
 
-    # SUPPORT FOR TYPES
-    def registerType(self,object):
-        if object.conf and object.conf["isTable"]:
-            name = object.__class__.__name__
-            if name not in self.tables:
-                self.tables.append(name)
-                if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
-                    self.insert(name,{})
-                else: self.insert(name,[])
-        else: raise Exception("not a table")
-
-    def validateType(self, object):
-        return object.__class__.__name__ in self.tables
-
-# sostituisce i relativi metodi in "connector"
-class DBActions:
-
-    def __init__(self,name,connector):
-        self.conn = connector
-        self.name = name
-
-    def create(self):
-        self.conn.create_database(self.name)
-
-    def delete(self):
-        self.conn.delete_database(self.name)
-
-    def open(self):
-        self.conn.open_database(self.name)
-
-    def save(self):
-        self.conn.save_database()
-
 class Database():
 
     def __init__(self, name, path = None):
 
         # Define configuration
         conf = {
+            "name": name,
             "local_path": "",
             "tables": []
         }
@@ -211,29 +112,86 @@ class Database():
                 raise PathNonExists(path)
         else: conf["local_path"] = os.getcwd()
 
+        # Generate path for DB files
+        sep = "\\" if "\\" in conf["local_path"] else "/"
+        conf["path"] = conf["local_path"] + sep + name
+        conf["ref"] = name  + ".json"
+
         conn = connector(conf)
-        self.name = name
-
-        #Import DB Actions
-        self.actions = DBActions(name,conn)
-
-        #open database
-        conn.open_database(name)
-        conn.set_db(name)
 
         self.connector = conn
+        self.conf = conf
+
+        #open database
+        self.open_database(name)
+        conn.set_db(name)
+
+    def create_database(self):
+
+        # TODO: controlla che esista la dir prima
+        os.mkdir(self.conf['path'])
+        os.chdir(self.conf['path'])
+        with open(self.conf['ref'], 'w') as db:
+            json.dump({}, db)
+
+    def open_database(self,name):
+        if not os.path.exists(self.conf["path"]):
+            print("create new db")
+            self.create_database()
+            self.save_database()
+        else:
+            os.chdir(self.conf["path"])
+            with open('config.json', 'r') as i:
+                self.conf = json.loads(i.read())
 
     def delete_database(self):
-        self.actions.delete()
+        if os.getcwd() == self.conf['path']:
+            os.chdir("..")
+            shutil.rmtree(self.conf['path'])
     
     def save_database(self):
-        self.actions.save()
+        #os.chdir(self.conf["path"])
+        with open("config.json", 'w') as f:
+            f.write(json.dumps(self.conf))
     
     def close(self):
-        self.actions.save()
+        self.save_database()
+    
+    def insert(self, object):
+        if not self.validateType(object):
+            self.registerType(object)
+            
+        tablename = object.__class__.__name__
+        
+        if tablename not in self.conf["tables"]:
+            return False
 
-    def insert(self,data):
-        self.connector.insert_table(data)
+        
+        with open(self.conf['ref'], "r") as jf:
+            data = json.loads(jf.read())
+
+        if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
+            data[tablename][len(data[tablename])] = object.asObject()
+        else:
+            data[tablename].append(object.asObject())
+
+        with open(self.conf['ref'], "w") as jf:
+            json.dump(data, jf)
+
 
     def dump(self):
-        return self.connector.dump(self.name)
+        with open(self.conf['ref'], "r") as jf:
+            return json.loads(jf.read())
+    
+    # SUPPORT FOR TYPES
+    def registerType(self,object):
+        if object.conf and object.conf["isTable"]:
+            name = object.__class__.__name__
+            self.conf["tables"].append(name)
+            if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
+                self.connector.insert(name,{})
+            else: self.connector.insert(name,[])
+        else: raise Exception("not a table")
+
+    def validateType(self, object):
+        return object.__class__.__name__ in self.conf["tables"]
