@@ -1,17 +1,26 @@
-from pyjbd import pyjbd
+from pyjbd.pyjbd import Database
+from pyjbd.typeutils import Table, IndexedTable
 
-db = pyjbd.pyjbd()
+class Prova(Table):
+    def __init__(self):
+        super().__init__()
+        self.field = ""
+class Prova2(IndexedTable):
+    def __init__(self):
+        super().__init__()
+        self.field2 = ""
 
-db.create_database("m")
-db.set_db('m')
-db.add("nome", "giuseppe")
-db.add("cognome", "criscione")
-db.add('list', [])
-print(db.dump('m'))
-db.update('list', [1, 2])
-print(db.dump('m'))
-print(db.get("cognome"))
-db.delete("cognome")
-print(db.dump("m"))
-db.delete_database("m")
+db = Database("m")
 
+p = Prova() #not indexed data
+p.field = "prova"
+
+p2 = Prova2() #indexed data
+p2.field2 = "aasdad"
+
+db.insert(p)
+db.insert(p2)
+print(db.dump())
+
+db.delete_database()
+#db.close()

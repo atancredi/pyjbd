@@ -16,4 +16,3 @@ class IndexedTable(Table):
     def __init__(self):
         super().__init__()
         self.conf["hasIndex"] = True
-        print(self.conf)

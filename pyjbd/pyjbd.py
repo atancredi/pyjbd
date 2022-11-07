@@ -18,15 +18,11 @@ class connector:
     db_list = []
     db_prefs = None
 
-    def __init__(self, path = None):
+    def __init__(self,conf, path = None):
+
         try:
-            if path != None:
-                if os.path.exists(path):
-                    self.local_path = path
-                else:
-                    raise PathNonExists(path)
-            self.local_path = os.getcwd()
-            self.tables = []
+            self.local_path = conf["local_path"]
+            self.tables = conf["tables"]
             self.db = {}
             
             #separator specific for system - can be done better
@@ -124,8 +120,6 @@ class connector:
             data = json.loads(jf.read())
 
         if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
-            #oo = dict(object.asObject())
-            #oo["_id"] = len(data)-1
             data[tablename][len(data[tablename])] = object.asObject()
         else:
             data[tablename].append(object.asObject())
@@ -169,7 +163,6 @@ class connector:
     # SUPPORT FOR TYPES
     def registerType(self,object):
         if object.conf and object.conf["isTable"]:
-        #if "isTable" in object.__dict__.keys() :
             name = object.__class__.__name__
             if name not in self.tables:
                 self.tables.append(name)
@@ -181,32 +174,66 @@ class connector:
     def validateType(self, object):
         return object.__class__.__name__ in self.tables
 
+# sostituisce i relativi metodi in "connector"
 class DBActions:
 
-    def __init__(self,name):
-        self.db = connector()
+    def __init__(self,name,connector):
+        self.conn = connector
         self.name = name
 
     def create(self):
-        self.db.create_database(self.name)
+        self.conn.create_database(self.name)
 
     def delete(self):
-        self.db.delete_database(self.name)
+        self.conn.delete_database(self.name)
 
     def open(self):
-        pass
+        self.conn.open_database(self.name)
 
     def save(self):
-        pass
+        self.conn.save_database()
 
 class Database():
 
     def __init__(self, name, path = None):
-        pass
 
-        if path == None:
-            path = os.getcwd()
+        # Define configuration
+        conf = {
+            "local_path": "",
+            "tables": []
+        }
 
-        #try to open database
+        # User-defined path
+        if path != None:
+            if os.path.exists(path):
+                conf["local_path"] = path
+            else:
+                raise PathNonExists(path)
+        else: conf["local_path"] = os.getcwd()
 
-        #if not exists create
+        conn = connector(conf)
+        self.name = name
+
+        #Import DB Actions
+        self.actions = DBActions(name,conn)
+
+        #open database
+        conn.open_database(name)
+        conn.set_db(name)
+
+        self.connector = conn
+
+    def delete_database(self):
+        self.actions.delete()
+    
+    def save_database(self):
+        self.actions.save()
+    
+    def close(self):
+        self.actions.save()
+
+    def insert(self,data):
+        self.connector.insert_table(data)
+
+    def dump(self):
+        return self.connector.dump(self.name)
