@@ -6,6 +6,12 @@ import sys
 from pyjbd import dbutils as utils
 from pyjbd.exceptions import *
 
+# Instead of using connector i should wrap it into database for opening a database class for every connection
+# NEXT use pydantic
+# NEXT this should be a wrapper for ANY database with support for typing like EntityFramework more or less
+
+# GOAL: i have a table in any db, i have an object matching the properties of that table:
+# ---> one function to insert, delete, update, select
 
 class connector:
 
@@ -204,5 +210,3 @@ class Database():
         #try to open database
 
         #if not exists create
-
-
