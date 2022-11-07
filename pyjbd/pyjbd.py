@@ -50,6 +50,7 @@ class connector:
             json.dump(tmp_db, db_name)
 
         self.db_list.append(db)
+        self.save_database()
 
     def save_database(self):
         os.chdir(self.db["path"])
@@ -116,7 +117,12 @@ class connector:
         with open(self.db_prefs['ref'], "r") as jf:
             data = json.loads(jf.read())
 
-        data[tablename].append(object.asObject())
+        if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
+            #oo = dict(object.asObject())
+            #oo["_id"] = len(data)-1
+            data[tablename][len(data[tablename])] = object.asObject()
+        else:
+            data[tablename].append(object.asObject())
 
         with open(self.db_prefs['ref'], "w") as jf:
             json.dump(data, jf)
@@ -161,7 +167,9 @@ class connector:
             name = object.__class__.__name__
             if name not in self.tables:
                 self.tables.append(name)
-                self.insert(name,[])
+                if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
+                    self.insert(name,{})
+                else: self.insert(name,[])
         else: raise Exception("not a table")
 
     def validateType(self, object):

@@ -9,10 +9,11 @@ class Table:
     def asObject(self):
         obj = dict(self.__dict__)
         del obj["conf"]
-        return self.__dict__
+        return obj
 
 class IndexedTable(Table):
 
     def __init__(self):
         super().__init__()
-        self.hasIndex = True
+        self.conf["hasIndex"] = True
+        print(self.conf)
