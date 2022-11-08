@@ -22,7 +22,7 @@ p2.field2 = "aasdad"
 
 #NON INSERTA PIU
 
-print(db.conf)
+#print(db.conf)
 
 # print(db.dump())
 db.insert(p)
