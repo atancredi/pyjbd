@@ -192,6 +192,22 @@ class Database():
         with open(self.conf['ref'], "w") as jf:
             json.dump(data, jf)
 
+    def get(self,object):
+        tablename = object.__class__.__name__
+        
+        if tablename not in self.conf["tables"]:
+            return False
+
+        retdata = []
+        totaldata = self.dump()
+
+        for oo in totaldata[tablename]:
+            for key in oo:
+                object[str(key)] = oo[str(key)]
+            retdata.append(object.asObject())
+        
+        return retdata
+
 
     def dump(self):
         with open(self.conf['ref'], "r") as jf:

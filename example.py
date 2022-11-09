@@ -13,7 +13,7 @@ class Prova2(IndexedTable):
 
 db = Database("n", subfolder="dbs")
 
-db.reset_database()
+#db.reset_database()
 
 p = Prova() #not indexed data
 p.field = "prova"
@@ -28,8 +28,11 @@ p2.field2 = "aasdad"
 
 # print(db.dump())
 # db.insert(p)
+# db.insert(p)
+# db.insert(p)
 # db.insert(p2)
 # print(db.dump())
+print(db.get(Prova()))
  
 
 #db.delete_database()
