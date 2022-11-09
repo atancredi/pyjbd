@@ -11,5 +11,6 @@ RELEASED
  - v1.1.1 support for subfolder (storing multiple dbs in the same project)
  - v1.1.2 reset a database (erase all)
  - v1.1.3 get list of objects
+ - v1.1.4 specify CWD
 
 WIP

@@ -95,7 +95,7 @@ class connector:
 
 class Database():
 
-    def __init__(self, name, subfolder = None):
+    def __init__(self, name, subfolder = None, cwd = None):
 
         # Define configuration
         conf = {
@@ -108,7 +108,9 @@ class Database():
         self.sep = sep
 
         # User-defined path
-        cwd = os.getcwd()
+        if cwd == None:
+            cwd = os.getcwd()
+        
         if subfolder != None:
             # if os.path.exists(cwd + sep + subfolder):
             #     conf["local_path"] = cwd + sep + subfolder
