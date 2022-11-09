@@ -206,7 +206,7 @@ class Database():
         for oo in totaldata[tablename]:
             for key in oo:
                 object[str(key)] = oo[str(key)]
-            retdata.append(object.asObject())
+            retdata.append(object)
         
         return retdata
 
@@ -220,6 +220,7 @@ class Database():
         if object.conf and object.conf["isTable"]:
             name = object.__class__.__name__
             self.conf["tables"].append(name)
+            self.save_database()
             if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
                 self.connector.insert(name,{})
             else: self.connector.insert(name,[])
