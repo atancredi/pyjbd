@@ -105,6 +105,7 @@ class Database():
         }
 
         sep = "\\" if "\\" in conf["local_path"] else "/"
+        self.sep = sep
 
         # User-defined path
         cwd = os.getcwd()
@@ -119,7 +120,7 @@ class Database():
             conf["local_path"] = fullpath
         else: conf["local_path"] = cwd
 
-        print(conf)
+        # print(conf)
 
         # Generate path for DB files
         conf["path"] = conf["local_path"] + sep + name
@@ -143,8 +144,8 @@ class Database():
             json.dump({}, db)
 
     def open_database(self,name):
-        if not os.path.exists(self.conf["path"]):
-            print("create new db")
+        if not os.path.exists(self.conf["path"]+self.sep+'config.json'):
+            # print("create new db")
             self.create_database()
             self.save_database()
         else:
@@ -152,10 +153,15 @@ class Database():
             with open('config.json', 'r') as i:
                 self.conf = json.loads(i.read())
 
+    def reset_database(self):
+        self.delete_database()
+        self.create_database()
+        self.save_database()
+
     def delete_database(self):
-        if os.getcwd() == self.conf['path']:
-            os.chdir("..")
-            shutil.rmtree(self.conf['path'])
+        self.conf['tables'] = []
+        os.chdir('..')
+        shutil.rmtree(self.conf['path'])
     
     def save_database(self):
         #os.chdir(self.conf["path"])
