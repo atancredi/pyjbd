@@ -15,5 +15,5 @@ class KeyNotFound(Exception):
 class PathNonExists(Exception):
     def __init__(self, path = None):
         if path != None:
-            super.__init__("Path does not exists: "+path)
-        else: super.__init__("Path does not exists.")
+            super().__init__("Path does not exists: "+path)
+        else: super().__init__("Path does not exists.")

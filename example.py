@@ -11,7 +11,7 @@ class Prova2(IndexedTable):
         super().__init__()
         self.field2 = ""
 
-db = Database("m")
+db = Database("n", subfolder="dbs")
 
 p = Prova() #not indexed data
 p.field = "prova"

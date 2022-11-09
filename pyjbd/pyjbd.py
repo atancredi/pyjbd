@@ -95,7 +95,7 @@ class connector:
 
 class Database():
 
-    def __init__(self, name, path = None):
+    def __init__(self, name, subfolder = None):
 
         # Define configuration
         conf = {
@@ -104,16 +104,24 @@ class Database():
             "tables": []
         }
 
+        sep = "\\" if "\\" in conf["local_path"] else "/"
+
         # User-defined path
-        if path != None:
-            if os.path.exists(path):
-                conf["local_path"] = path
-            else:
-                raise PathNonExists(path)
-        else: conf["local_path"] = os.getcwd()
+        cwd = os.getcwd()
+        if subfolder != None:
+            # if os.path.exists(cwd + sep + subfolder):
+            #     conf["local_path"] = cwd + sep + subfolder
+            # else:
+            #     raise PathNonExists(cwd + sep + subfolder)
+            fullpath = cwd + sep + subfolder
+            if not os.path.exists(fullpath):
+                os.mkdir(fullpath)
+            conf["local_path"] = fullpath
+        else: conf["local_path"] = cwd
+
+        print(conf)
 
         # Generate path for DB files
-        sep = "\\" if "\\" in conf["local_path"] else "/"
         conf["path"] = conf["local_path"] + sep + name
         conf["ref"] = name  + ".json"
 
