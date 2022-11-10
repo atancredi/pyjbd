@@ -4,7 +4,7 @@ A very small Python JSON Based Database
 With **pyjbd** you can easly manage and use a database using JSON file!
 
 CURRENT
-<b>v1.1.3</b>
+<b>v1.1.4</b>
 
 RELEASED
  - v1 basic functionalities
