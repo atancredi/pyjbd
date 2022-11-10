@@ -5,7 +5,7 @@ With **pyjbd** you can easly manage and use a database using JSON file!
 
 <hr>
 
-## CURRENT: <b>v2.2</b>  <br/>
+## CURRENT: <b>v2.1</b>  <br/>
 
 <hr>
 

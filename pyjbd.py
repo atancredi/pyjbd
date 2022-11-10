@@ -10,16 +10,12 @@ import shutil
 #####################################################
 class Database():
 
-    __version__ = "2"
+    __version__ = "2.1"
 
     def __init__(self, name, subfolder = None, working_dir = None):
         
 
         self.conf = Configuration(name, subfolder, working_dir)
-        print(self.conf.__dict__)
-
-        # print(conf.__dict__)
-        # self.conf = conf.__dict__
 
         #open database
         self.open_database(name)
@@ -35,7 +31,6 @@ class Database():
 
     def open_database(self,name):
         if not os.path.exists(self.conf.path+self.conf.sep+'config.json'):
-            # print("create new db")
             self.create_database()
             self.save_database()
         else:
@@ -69,13 +64,9 @@ class Database():
         
         if tablename not in self.conf.tables:
             return False
-
         
         with open(self.conf.ref, "r") as jf:
             data = json.loads(jf.read())
-        
-        print("AHHHHHHHHHHHHH")
-        print(data)
 
         if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
             data[tablename][len(data[tablename])] = object.asObject()
@@ -112,13 +103,11 @@ class Database():
             self.conf.tables.append(name)
             self.save_database()
             if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
-                print('STOINSERNENDO')
                 raw_insert(self.conf.ref,name,{})
             else: raw_insert(self.conf.ref,name,[])
         else: raise Exception("not a table")
 
     def validateType(self, object):
-        print(self.conf)
         return object.__class__.__name__ in self.conf.tables
 
 #####################################################
@@ -202,7 +191,6 @@ class Configuration:
     def load(self, object):
         for key in object:
             setattr(self,key,object[key])
-
 
 #####################################################
 ##### Utility Functions #############################
