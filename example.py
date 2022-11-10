@@ -27,9 +27,9 @@ p2.field2 = "aasdad"
 
 # print(db.dump())
 db.insert(p)
-db.insert(p)
+#db.insert(p)
 # db.insert(p)
-# db.insert(p2)
+db.insert(p2)
 # print(db.dump())
 print(db.get(Prova()))
  
