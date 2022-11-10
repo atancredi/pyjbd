@@ -3,8 +3,6 @@ import os
 import shutil
 import sys
 
-from pyjbd import dbutils as utils
-from pyjbd.exceptions import *
 
 # Instead of using connector i should wrap it into database for opening a database class for every connection
 # NEXT use pydantic
@@ -67,7 +65,7 @@ class connector:
         if key in data:
             data.pop(key, None)
         else:
-            raise KeyNotFound
+            raise Exceptions.KeyNotFound
 
         with open(self.db_prefs['ref'], "w") as jf:
             json.dump(data, jf)
@@ -79,7 +77,7 @@ class connector:
         if key in data:
             data[key] = new_value
         else:
-            raise KeyNotFound
+            raise Exceptions.KeyNotFound
 
         with open(self.db_prefs['ref'], "w") as jf:
             json.dump(data, jf)
@@ -91,12 +89,17 @@ class connector:
             if key in data:
                 return data[key]
             else:
-                raise KeyNotFound
+                raise Exceptions.KeyNotFound
 
+#####################################################
+##### Database Object ###############################
+#####################################################
 class Database():
 
-    def __init__(self, name, subfolder = None, cwd = None):
+    __version__ = "1.1.4"
 
+    def __init__(self, name, subfolder = None, cwd = None):
+        
         # Define configuration
         conf = {
             "name": name,
@@ -210,7 +213,6 @@ class Database():
         
         return retdata
 
-
     def dump(self):
         with open(self.conf['ref'], "r") as jf:
             return json.loads(jf.read())
@@ -228,3 +230,64 @@ class Database():
 
     def validateType(self, object):
         return object.__class__.__name__ in self.conf["tables"]
+
+#####################################################
+##### Database Type Settings ########################
+#####################################################
+class Table:
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __init__(self):
+        self.conf = {
+            "isTable": True
+        }
+    
+    # RETURN as Object
+    def asObject(self):
+        obj = dict(self.__dict__)
+        del obj["conf"]
+        return obj
+
+class IndexedTable(Table):
+
+    def __init__(self):
+        super().__init__()
+        self.conf["hasIndex"] = True
+
+#####################################################
+##### Exceptions ####################################
+#####################################################
+class Exceptions:
+
+    class Error(Exception):
+        def __init__(self):
+            super().__init__("An error occured")
+
+    class DatabaseError(Exception):
+        def __init__(self):
+            super().__init__("Database does not exsists")
+
+    class KeyNotFound(Exception):
+        def __init__(self):
+            super().__init__("Key not found in database")
+
+    class PathNonExists(Exception):
+        def __init__(self, path = None):
+            if path != None:
+                super().__init__("Path does not exists: "+path)
+            else: super().__init__("Path does not exists.")
+
+#####################################################
+##### Utility Functions #############################
+#####################################################
+def exists(list, name):
+    for db in list:
+        if db['name'] == name:
+            return db
+    return False
+

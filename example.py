@@ -1,5 +1,4 @@
-from pyjbd.pyjbd import Database
-from pyjbd.typeutils import Table, IndexedTable
+from pyjbd import Database, Table, IndexedTable
 
 class Prova(Table):
     def __init__(self):
@@ -27,8 +26,8 @@ p2.field2 = "aasdad"
 #print(db.conf)
 
 # print(db.dump())
-# db.insert(p)
-# db.insert(p)
+db.insert(p)
+db.insert(p)
 # db.insert(p)
 # db.insert(p2)
 # print(db.dump())
