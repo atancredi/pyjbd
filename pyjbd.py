@@ -10,7 +10,7 @@ import shutil
 #####################################################
 class Database():
 
-    __version__ = "2.1"
+    __version__ = "2.2a"
 
     def __init__(self, name, subfolder = None, working_dir = None):
         
@@ -19,14 +19,12 @@ class Database():
 
         #open database
         self.open_database(name)
-        os.chdir(self.conf.path)
 
     def create_database(self):
 
         # TODO: controlla che esista la dir prima
         os.mkdir(self.conf.path)
-        os.chdir(self.conf.path)
-        with open(self.conf.ref, 'w') as db:
+        with open(self.conf.path+"/"+self.conf.ref, 'w') as db:
             json.dump({}, db)
 
     def open_database(self,name):
@@ -34,8 +32,7 @@ class Database():
             self.create_database()
             self.save_database()
         else:
-            os.chdir(self.conf.path)
-            with open('config.json', 'r') as i:
+            with open(self.conf.path+"/config.json", 'r') as i:
                 self.conf.load(json.loads(i.read()))
 
     def reset_database(self):
@@ -45,12 +42,10 @@ class Database():
 
     def delete_database(self):
         self.conf.tables = []
-        os.chdir('..')
         shutil.rmtree(self.conf.path)
     
     def save_database(self):
-        #os.chdir(self.conf["path"])
-        with open("config.json", 'w') as f:
+        with open(self.conf.path+"/config.json", 'w') as f:
             f.write(json.dumps(self.conf.__dict__))
     
     def close(self):
@@ -65,7 +60,7 @@ class Database():
         if tablename not in self.conf.tables:
             return False
         
-        with open(self.conf.ref, "r") as jf:
+        with open(self.conf.path+"/"+self.conf.ref, "r") as jf:
             data = json.loads(jf.read())
 
         if "hasIndex" in object.conf and object.conf["hasIndex"] == True:
@@ -73,7 +68,7 @@ class Database():
         else:
             data[tablename].append(object.asObject())
 
-        with open(self.conf.ref, "w") as jf:
+        with open(self.conf.path+"/"+self.conf.ref, "w") as jf:
             json.dump(data, jf)
 
     def get(self,object):
@@ -92,8 +87,12 @@ class Database():
         
         return retdata
 
+    def get_daje(self,obj):
+        tablename = obj.__class__.__name__
+        return self.dump()[tablename]
+
     def dump(self):
-        with open(self.conf.ref, "r") as jf:
+        with open(self.conf.path+"/"+self.conf.ref, "r") as jf:
             return json.loads(jf.read())
     
     # SUPPORT FOR TYPES
@@ -103,8 +102,8 @@ class Database():
             self.conf.tables.append(name)
             self.save_database()
             if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
-                raw_insert(self.conf.ref,name,{})
-            else: raw_insert(self.conf.ref,name,[])
+                raw_insert(self.conf.path+"/"+self.conf.ref,name,{})
+            else: raw_insert(self.conf.path+"/"+self.conf.ref,name,[])
         else: raise Exception("not a table")
 
     def validateType(self, object):
@@ -131,12 +130,6 @@ class Table:
         obj = dict(self.__dict__)
         del obj["conf"]
         return obj
-
-class IndexedTable(Table):
-
-    def __init__(self):
-        super().__init__()
-        self.conf["hasIndex"] = True
 
 #####################################################
 ##### Exceptions ####################################
