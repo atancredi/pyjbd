@@ -10,7 +10,7 @@ import shutil
 #####################################################
 class Database():
 
-    __version__ = "2.2a"
+    __version__ = "2.2"
 
     def __init__(self, name, subfolder = None, working_dir = None):
         
@@ -18,7 +18,7 @@ class Database():
         self.conf = Configuration(name, subfolder, working_dir)
 
         #open database
-        self.open_database(name)
+        self.open_database()
 
     def create_database(self):
 
@@ -27,7 +27,7 @@ class Database():
         with open(self.conf.path+"/"+self.conf.ref, 'w') as db:
             json.dump({}, db)
 
-    def open_database(self,name):
+    def open_database(self):
         if not os.path.exists(self.conf.path+self.conf.sep+'config.json'):
             self.create_database()
             self.save_database()
@@ -104,7 +104,7 @@ class Database():
             if object.conf and "hasIndex" in object.conf and object.conf["hasIndex"] == True:
                 raw_insert(self.conf.path+"/"+self.conf.ref,name,{})
             else: raw_insert(self.conf.path+"/"+self.conf.ref,name,[])
-        else: raise Exception("not a table")
+        else: raise Exceptions.TableNotFoundException("not a table")
 
     def validateType(self, object):
         return object.__class__.__name__ in self.conf.tables
@@ -139,6 +139,10 @@ class Exceptions:
     class Error(Exception):
         def __init__(self):
             super().__init__("An error occured")
+    
+    class TableNotFoundException(Exception):
+        def __init__(self):
+            super().__init__("Table does not exsists")
 
     class DatabaseError(Exception):
         def __init__(self):
